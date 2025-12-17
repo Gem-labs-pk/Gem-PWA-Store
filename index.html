@@ -11,16 +11,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
-        :root { 
-            --gem-black: #111111;
-            --gem-ghost: #F9FAFB;
-        }
+        :root { --gem-black: #111111; --gem-ghost: #F9FAFB; }
 
-        /* V1.3: Disable Selection for "App-like" feel */
         * {
             -webkit-tap-highlight-color: transparent;
             user-select: none;
             -webkit-user-select: none;
+            outline: none;
         }
 
         input { user-select: text; -webkit-user-select: text; }
@@ -31,6 +28,7 @@
             -webkit-font-smoothing: antialiased; 
             font-family: 'Inter', -apple-system, sans-serif;
             letter-spacing: -0.01em;
+            overflow-x: hidden;
         }
         
         .shimmer { 
@@ -58,6 +56,10 @@
             background-size: cover;
             background-position: center;
         }
+        
+        /* v1.4: Hide scrollbars */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -74,7 +76,7 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
-            <button id="install-btn" class="hidden text-[11px] font-black bg-black text-white px-4 py-2 rounded-full active:scale-90 transition-transform shadow-lg shadow-black/10 uppercase tracking-wider">
+            <button id="install-btn" class="hidden text-[11px] font-black bg-black text-white px-4 py-2 rounded-full active:scale-90 transition-transform uppercase tracking-wider">
                 Install
             </button>
             <button onclick="toggleAbout(true)" class="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center active:scale-90 transition-transform">
@@ -85,22 +87,21 @@
 
     <main class="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
         
-        <!-- Search Section -->
+        <!-- Search -->
         <div class="relative mb-10 group">
             <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-black transition-colors"></i>
             <input type="text" id="search" placeholder="Search applications..." class="w-full bg-gray-50 border border-transparent rounded-[1.5rem] py-5 pl-14 pr-6 outline-none focus:bg-white focus:border-black/5 focus:ring-4 focus:ring-black/5 transition-all text-sm font-medium">
-            <div id="search-history" class="mt-2 flex gap-2 overflow-x-auto no-scrollbar hidden"></div>
         </div>
 
-        <!-- Section: Featured -->
-        <div class="mb-10">
+        <!-- Featured -->
+        <div class="mb-10" id="featured-section">
             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Featured This Week</h3>
             <div id="featured-hero" onclick="openFeatured()" class="featured-hero w-full h-52 rounded-[2.5rem] relative overflow-hidden group cursor-pointer mb-10 shadow-2xl shadow-black/10 active:scale-95 transition-transform">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
                 <div class="absolute bottom-8 left-8 z-20">
                     <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-md mb-2 inline-block tracking-widest">Mastery</span>
-                    <h4 class="text-2xl font-bold text-white tracking-tight">Splitify: Pro Edition</h4>
-                    <p class="text-white/60 text-xs">Explore the Gem-PWA-Store build.</p>
+                    <h4 class="text-2xl font-bold text-white tracking-tight">Splitify</h4>
+                    <p class="text-white/60 text-xs">Tap to explore the latest build.</p>
                 </div>
             </div>
         </div>
@@ -128,7 +129,7 @@
                 </div>
             </div>
             <div class="mb-8">
-                <h3 id="m-title" class="text-4xl font-black mb-1 tracking-tighter"></h3>
+                <h3 id="m-title" class="text-4xl font-black mb-1 tracking-tighter leading-tight"></h3>
                 <p id="m-cat" class="text-gray-400 text-xs font-black uppercase tracking-[0.25em]"></p>
             </div>
             <p id="m-desc" class="text-gray-600 leading-relaxed text-sm mb-10 font-medium"></p>
@@ -142,7 +143,8 @@
                     <p class="font-bold text-black text-sm flex items-center justify-between">Email <i data-lucide="mail" class="w-3 h-3 text-gray-300"></i></p>
                 </button>
             </div>
-            <a id="m-link" href="#" target="_blank" class="block w-full bg-black text-white text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-black/20 active:scale-[0.98] transition-all">Get Application</a>
+            <!-- v1.4 FIX: Forced external link behavior -->
+            <a id="m-link" href="#" target="_blank" rel="noopener noreferrer external" class="block w-full bg-black text-white text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-black/20 active:scale-[0.98] transition-all">Get Application</a>
             <div class="h-8 safe-bottom"></div>
         </div>
     </div>
@@ -150,19 +152,12 @@
     <!-- About Modal -->
     <div id="about-modal" class="fixed inset-0 z-[70] bg-white hidden overflow-y-auto">
         <div class="max-w-xl mx-auto px-8 py-20">
-            <button onclick="toggleAbout(false)" class="mb-10 p-3 bg-gray-50 rounded-full"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <button onclick="toggleAbout(false)" class="mb-10 p-3 bg-gray-50 rounded-full active:scale-90 transition-transform"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
             <h2 class="text-5xl font-black tracking-tighter mb-6">About Gem Labs.</h2>
             <p class="text-lg text-gray-500 leading-relaxed mb-10">We build high-performance software for the next generation of the web. Focused on privacy, minimalism, and the "Gem Mono" design philosophy.</p>
-            
             <div class="space-y-8">
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Founder</h4>
-                    <p class="font-bold text-xl text-black">Saqib Zahid</p>
-                </div>
-                <div>
-                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Contact</h4>
-                    <p class="font-bold text-xl text-black">saqibzahidofficial@gmail.com</p>
-                </div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Founder</h4><p class="font-bold text-xl text-black">Saqib Zahid</p></div>
+                <div><h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Contact</h4><p class="font-bold text-xl text-black">saqibzahidofficial@gmail.com</p></div>
             </div>
         </div>
     </div>
@@ -175,7 +170,8 @@
 
         async function init() {
             try {
-                const res = await fetch('./apps.json');
+                // v1.4: Add timestamp to bypass cache
+                const res = await fetch(`./apps.json?t=${Date.now()}`);
                 data = await res.json();
                 render(data);
                 document.getElementById('app-count').innerText = `${data.length} apps available`;
@@ -188,13 +184,9 @@
                 render(data.filter(a => a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q)));
             };
 
-            // V1.3: Back button support
             window.addEventListener('popstate', (e) => {
-                if (document.getElementById('modal-container').classList.contains('hidden') === false) {
-                    closeModal(false);
-                } else if (document.getElementById('about-modal').classList.contains('hidden') === false) {
-                    toggleAbout(false, false);
-                }
+                if (document.getElementById('modal-container').classList.contains('hidden') === false) closeModal(false);
+                else if (document.getElementById('about-modal').classList.contains('hidden') === false) toggleAbout(false, false);
             });
 
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
@@ -235,10 +227,7 @@
 
             const container = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
-            
-            // V1.3: Add history state
             window.history.pushState({modal: true}, "");
-            
             container.classList.remove('hidden');
             setTimeout(() => { container.style.opacity = '1'; content.classList.remove('translate-y-full'); }, 10);
             lucide.createIcons();
@@ -255,13 +244,9 @@
 
         function toggleAbout(show, doPop = true) {
             const about = document.getElementById('about-modal');
-            if (show) {
-                window.history.pushState({about: true}, "");
-                about.classList.remove('hidden');
-            } else {
-                if (doPop) window.history.back();
-                about.classList.add('hidden');
-            }
+            if (show) { window.history.pushState({about: true}, ""); about.classList.remove('hidden'); } 
+            else { if (doPop) window.history.back(); about.classList.add('hidden'); }
+            lucide.createIcons();
         }
 
         function openFeatured() {
