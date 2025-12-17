@@ -3,7 +3,7 @@
  * Gem Store Service Worker (v1.3)
  */
 
-const CACHE_NAME = 'gem-store-v1.3';
+const CACHE_NAME = 'gem-store-v1.3.0';
 const ASSETS = [
   './',
   './index.html',
