@@ -16,6 +16,15 @@
             --gem-ghost: #F9FAFB;
         }
 
+        /* V1.3: Disable Selection for "App-like" feel */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        input { user-select: text; -webkit-user-select: text; }
+
         body { 
             background: #FFFFFF; 
             color: var(--gem-black); 
@@ -31,32 +40,29 @@
         }
         @keyframes shim { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         
-        .app-card {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .app-card:active {
-            transform: scale(0.96);
-            background-color: var(--gem-ghost);
-        }
+        .app-card { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .app-card:active { transform: scale(0.96); background-color: var(--gem-ghost); }
 
         .safe-bottom { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
         
-        .modal-sheet {
-            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-        }
+        .modal-sheet { transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
 
-        /* Glassmorphism utility */
         .glass {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
         }
+
+        .featured-hero {
+            background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1000');
+            background-size: cover;
+            background-position: center;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Premium Navigation -->
+    <!-- Navbar -->
     <header class="sticky top-0 z-50 glass border-b border-gray-100 px-6 py-5 flex justify-between items-center">
         <div class="flex items-center gap-3">
             <div class="w-9 h-9 bg-black rounded-xl flex items-center justify-center shadow-sm">
@@ -71,94 +77,93 @@
             <button id="install-btn" class="hidden text-[11px] font-black bg-black text-white px-4 py-2 rounded-full active:scale-90 transition-transform shadow-lg shadow-black/10 uppercase tracking-wider">
                 Install
             </button>
-            <div class="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
-                <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
-            </div>
+            <button onclick="toggleAbout(true)" class="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center active:scale-90 transition-transform">
+                <i data-lucide="info" class="w-4 h-4 text-black"></i>
+            </button>
         </div>
     </header>
 
-    <!-- Main Storefront -->
     <main class="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
         
         <!-- Search Section -->
         <div class="relative mb-10 group">
             <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-black transition-colors"></i>
             <input type="text" id="search" placeholder="Search applications..." class="w-full bg-gray-50 border border-transparent rounded-[1.5rem] py-5 pl-14 pr-6 outline-none focus:bg-white focus:border-black/5 focus:ring-4 focus:ring-black/5 transition-all text-sm font-medium">
+            <div id="search-history" class="mt-2 flex gap-2 overflow-x-auto no-scrollbar hidden"></div>
         </div>
 
         <!-- Section: Featured -->
         <div class="mb-10">
             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Featured This Week</h3>
-            <div id="featured-hero" class="w-full h-48 bg-black rounded-[2.5rem] relative overflow-hidden group cursor-pointer mb-10 shadow-2xl shadow-black/10">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
-                <!-- Placeholder for high-res hero image -->
-                <div class="absolute inset-0 shimmer opacity-10"></div>
+            <div id="featured-hero" onclick="openFeatured()" class="featured-hero w-full h-52 rounded-[2.5rem] relative overflow-hidden group cursor-pointer mb-10 shadow-2xl shadow-black/10 active:scale-95 transition-transform">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10"></div>
                 <div class="absolute bottom-8 left-8 z-20">
                     <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-md mb-2 inline-block tracking-widest">Mastery</span>
                     <h4 class="text-2xl font-bold text-white tracking-tight">Splitify: Pro Edition</h4>
-                    <p class="text-white/60 text-xs">The gold standard for expense sharing.</p>
+                    <p class="text-white/60 text-xs">Explore the Gem-PWA-Store build.</p>
                 </div>
             </div>
         </div>
 
-        <!-- Section: Directory -->
         <div class="mb-4 flex items-baseline justify-between">
             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">App Directory</h3>
             <span id="app-count" class="text-[10px] font-bold text-gray-300 italic"></span>
         </div>
         
         <div id="apps" class="space-y-3">
-            <!-- Skeletons -->
             <div class="h-24 shimmer rounded-[2rem]"></div>
             <div class="h-24 shimmer rounded-[2rem]"></div>
         </div>
     </main>
 
-    <!-- Professional App Sheet (Modal) -->
+    <!-- App Detail Modal -->
     <div id="modal-container" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm hidden flex items-end justify-center p-0 opacity-0 transition-opacity duration-300">
         <div id="modal-content" class="modal-sheet bg-white w-full max-w-xl rounded-t-[3rem] p-10 transform translate-y-full shadow-2xl relative">
-            
-            <!-- Handle -->
             <div class="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-100 rounded-full"></div>
-
-            <!-- Top Actions -->
             <div class="flex justify-between items-start mb-10">
                 <div id="m-icon" class="w-24 h-24 bg-black rounded-[2.5rem] shadow-xl overflow-hidden flex items-center justify-center p-0"></div>
                 <div class="flex gap-2">
-                    <button id="m-share" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform">
-                        <i data-lucide="share" class="w-5 h-5 text-black"></i>
-                    </button>
-                    <button onclick="closeModal()" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform">
-                        <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
-                    </button>
+                    <button id="m-share" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform"><i data-lucide="share" class="w-5 h-5 text-black"></i></button>
+                    <button onclick="closeModal()" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform"><i data-lucide="x" class="w-5 h-5 text-gray-400"></i></button>
                 </div>
             </div>
-            
             <div class="mb-8">
                 <h3 id="m-title" class="text-4xl font-black mb-1 tracking-tighter"></h3>
                 <p id="m-cat" class="text-gray-400 text-xs font-black uppercase tracking-[0.25em]"></p>
             </div>
-            
             <p id="m-desc" class="text-gray-600 leading-relaxed text-sm mb-10 font-medium"></p>
-            
             <div class="grid grid-cols-2 gap-4 mb-10">
                 <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100">
                     <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">Version</p>
                     <p id="m-ver" class="font-bold text-black text-sm"></p>
                 </div>
-                <button id="feedback-btn" class="bg-gray-50 p-5 rounded-3xl border border-gray-100 text-left active:scale-95 transition-transform group">
+                <button id="feedback-btn" class="bg-gray-50 p-5 rounded-3xl border border-gray-100 text-left active:scale-95 transition-transform">
                     <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">Support</p>
-                    <p class="font-bold text-black text-sm flex items-center justify-between">Email <i data-lucide="arrow-up-right" class="w-3 h-3 text-gray-300 group-hover:text-black"></i></p>
+                    <p class="font-bold text-black text-sm flex items-center justify-between">Email <i data-lucide="mail" class="w-3 h-3 text-gray-300"></i></p>
                 </button>
             </div>
-            
-            <div class="flex gap-3">
-                <a id="m-link" href="#" target="_blank" class="flex-1 bg-black text-white text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:shadow-2xl shadow-black/20 active:scale-[0.98] transition-all">
-                    Get Application
-                </a>
-            </div>
-            
+            <a id="m-link" href="#" target="_blank" class="block w-full bg-black text-white text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest shadow-black/20 active:scale-[0.98] transition-all">Get Application</a>
             <div class="h-8 safe-bottom"></div>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="fixed inset-0 z-[70] bg-white hidden overflow-y-auto">
+        <div class="max-w-xl mx-auto px-8 py-20">
+            <button onclick="toggleAbout(false)" class="mb-10 p-3 bg-gray-50 rounded-full"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+            <h2 class="text-5xl font-black tracking-tighter mb-6">About Gem Labs.</h2>
+            <p class="text-lg text-gray-500 leading-relaxed mb-10">We build high-performance software for the next generation of the web. Focused on privacy, minimalism, and the "Gem Mono" design philosophy.</p>
+            
+            <div class="space-y-8">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Founder</h4>
+                    <p class="font-bold text-xl text-black">Saqib Zahid</p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-2">Contact</h4>
+                    <p class="font-bold text-xl text-black">saqibzahidofficial@gmail.com</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -166,12 +171,7 @@
         let data = [];
         const FEEDBACK_EMAIL = "saqibzahidofficial@gmail.com";
 
-        const renderIcon = (icon) => {
-            if (icon.includes('.') || icon.includes('/')) {
-                return `<img src="${icon}" class="w-full h-full object-cover">`;
-            }
-            return `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i data-lucide="${icon}" class="w-1/2 h-1/2"></i></div>`;
-        };
+        const renderIcon = (icon) => (icon.includes('.') || icon.includes('/')) ? `<img src="${icon}" class="w-full h-full object-cover">` : `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i data-lucide="${icon}" class="w-1/2 h-1/2"></i></div>`;
 
         async function init() {
             try {
@@ -179,21 +179,25 @@
                 data = await res.json();
                 render(data);
                 document.getElementById('app-count').innerText = `${data.length} apps available`;
-            } catch (e) {
-                console.error("Data load failed:", e);
-                document.getElementById('apps').innerHTML = `<p class="text-center text-gray-400 py-10">Directory temporarily unavailable.</p>`;
-            }
+            } catch (e) { document.getElementById('apps').innerHTML = `<p class="text-center text-gray-400 py-10">Directory Offline.</p>`; }
             
             lucide.createIcons();
             
             document.getElementById('search').oninput = (e) => {
                 const q = e.target.value.toLowerCase();
-                const filtered = data.filter(a => a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q));
-                render(filtered);
+                render(data.filter(a => a.name.toLowerCase().includes(q) || a.category.toLowerCase().includes(q)));
             };
 
+            // V1.3: Back button support
+            window.addEventListener('popstate', (e) => {
+                if (document.getElementById('modal-container').classList.contains('hidden') === false) {
+                    closeModal(false);
+                } else if (document.getElementById('about-modal').classList.contains('hidden') === false) {
+                    toggleAbout(false, false);
+                }
+            });
+
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-            setupPWAInstall();
         }
 
         function render(apps) {
@@ -201,9 +205,7 @@
             container.innerHTML = apps.map(app => `
                 <div onclick='openModal(${JSON.stringify(app)})' class="app-card flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[2.2rem] cursor-pointer shadow-sm">
                     <div class="flex items-center gap-5">
-                        <div class="w-16 h-16 rounded-[1.3rem] overflow-hidden shadow-sm bg-gray-50 border border-gray-50">
-                            ${renderIcon(app.icon)}
-                        </div>
+                        <div class="w-16 h-16 rounded-[1.3rem] overflow-hidden shadow-sm bg-gray-50 border border-gray-50">${renderIcon(app.icon)}</div>
                         <div>
                             <div class="flex items-center gap-2 mb-0.5">
                                 <h4 class="font-bold text-base tracking-tight">${app.name}</h4>
@@ -212,9 +214,7 @@
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">${app.category}</p>
                         </div>
                     </div>
-                    <div class="bg-gray-50 text-black h-10 w-16 flex items-center justify-center rounded-full text-[10px] font-black tracking-tighter active:bg-black active:text-white transition-all">
-                        GET
-                    </div>
+                    <div class="bg-gray-50 text-black h-10 w-16 flex items-center justify-center rounded-full text-[10px] font-black tracking-tighter">GET</div>
                 </div>
             `).join('');
             lucide.createIcons();
@@ -227,62 +227,46 @@
             document.getElementById('m-ver').innerText = app.version;
             document.getElementById('m-link').href = app.url;
             document.getElementById('m-icon').innerHTML = renderIcon(app.icon);
-            
-            document.getElementById('feedback-btn').onclick = () => {
-                window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=Feedback for ${app.name}`;
-            };
-
-            // Individual Sharing Logic
+            document.getElementById('feedback-btn').onclick = () => window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=Feedback: ${app.name}`;
             document.getElementById('m-share').onclick = async () => {
-                if (navigator.share) {
-                    try {
-                        await navigator.share({
-                            title: app.name,
-                            text: `Check out ${app.name} on Gem Store.`,
-                            url: app.url
-                        });
-                    } catch (e) { console.log("Share cancelled"); }
-                } else {
-                    navigator.clipboard.writeText(app.url);
-                    alert("App link copied to clipboard!");
-                }
+                if (navigator.share) await navigator.share({ title: app.name, url: app.url });
+                else { navigator.clipboard.writeText(app.url); alert("Link Copied"); }
             };
 
             const container = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
             
-            container.classList.remove('hidden');
-            setTimeout(() => {
-                container.style.opacity = '1';
-                content.classList.remove('translate-y-full');
-            }, 10);
+            // V1.3: Add history state
+            window.history.pushState({modal: true}, "");
             
+            container.classList.remove('hidden');
+            setTimeout(() => { container.style.opacity = '1'; content.classList.remove('translate-y-full'); }, 10);
             lucide.createIcons();
         }
 
-        function closeModal() {
+        function closeModal(doPop = true) {
+            if (doPop) window.history.back();
             const container = document.getElementById('modal-container');
             const content = document.getElementById('modal-content');
-            
             container.style.opacity = '0';
             content.classList.add('translate-y-full');
             setTimeout(() => container.classList.add('hidden'), 500);
         }
 
-        function setupPWAInstall() {
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                window.deferredPrompt = e;
-                document.getElementById('install-btn').classList.remove('hidden');
-            });
+        function toggleAbout(show, doPop = true) {
+            const about = document.getElementById('about-modal');
+            if (show) {
+                window.history.pushState({about: true}, "");
+                about.classList.remove('hidden');
+            } else {
+                if (doPop) window.history.back();
+                about.classList.add('hidden');
+            }
+        }
 
-            document.getElementById('install-btn').onclick = async () => {
-                if (window.deferredPrompt) {
-                    window.deferredPrompt.prompt();
-                    const { outcome } = await window.deferredPrompt.userChoice;
-                    if (outcome === 'accepted') document.getElementById('install-btn').classList.add('hidden');
-                }
-            };
+        function openFeatured() {
+            const splitify = data.find(a => a.id === 'splitify');
+            if (splitify) openModal(splitify);
         }
 
         window.onload = init;
