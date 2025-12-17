@@ -9,94 +9,156 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --gem-black: #111111; }
-        body { background: #FFFFFF; color: var(--gem-black); -webkit-font-smoothing: antialiased; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
-        .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shim 1.5s infinite; }
+        :root { 
+            --gem-black: #111111;
+            --gem-ghost: #F9FAFB;
+        }
+
+        body { 
+            background: #FFFFFF; 
+            color: var(--gem-black); 
+            -webkit-font-smoothing: antialiased; 
+            font-family: 'Inter', -apple-system, sans-serif;
+            letter-spacing: -0.01em;
+        }
+        
+        .shimmer { 
+            background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%); 
+            background-size: 200% 100%; 
+            animation: shim 1.5s infinite; 
+        }
         @keyframes shim { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
         
-        .app-icon-container { aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
-        .app-icon-container img { width: 100%; height: 100%; object-fit: cover; }
+        .app-card {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .app-card:active {
+            transform: scale(0.96);
+            background-color: var(--gem-ghost);
+        }
+
+        .safe-bottom { padding-bottom: calc(1.5rem + env(safe-area-inset-bottom)); }
         
-        .safe-bottom { padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
-        
-        /* Smooth transitions for modal */
-        #modal-container { transition: opacity 0.3s ease; }
-        #modal-content { transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        
-        /* Custom scrollbar for desktop */
-        ::-webkit-scrollbar { width: 0px; }
+        .modal-sheet {
+            transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Navbar -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b px-6 py-4 flex justify-between items-center">
+    <!-- Premium Navigation -->
+    <header class="sticky top-0 z-50 glass border-b border-gray-100 px-6 py-5 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <div class="w-9 h-9 bg-black rounded-xl flex items-center justify-center shadow-sm">
                 <img src="assets/gem-logo.svg" class="w-5 h-5" alt="Logo">
             </div>
-            <h1 class="text-lg font-bold tracking-tight">Gem Store</h1>
+            <div>
+                <h1 class="text-lg font-extrabold tracking-tighter leading-none">Gem Store</h1>
+                <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Labs Edition</p>
+            </div>
         </div>
-        <div class="flex items-center gap-2">
-            <button onclick="shareStore()" class="p-2 text-gray-400 hover:text-black transition-colors">
-                <i data-lucide="share" class="w-5 h-5"></i>
-            </button>
-            <button id="install-btn" class="hidden text-xs font-bold bg-black text-white px-4 py-2 rounded-full active:scale-95 transition-transform">
+        <div class="flex items-center gap-3">
+            <button id="install-btn" class="hidden text-[11px] font-black bg-black text-white px-4 py-2 rounded-full active:scale-90 transition-transform shadow-lg shadow-black/10 uppercase tracking-wider">
                 Install
             </button>
+            <div class="w-9 h-9 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden">
+                <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
+            </div>
         </div>
     </header>
 
-    <!-- Main -->
+    <!-- Main Storefront -->
     <main class="flex-1 max-w-2xl mx-auto w-full px-6 py-8">
-        <div class="mb-8">
-            <h2 class="text-4xl font-black mb-1">Discover</h2>
-            <p class="text-gray-400 text-sm">Official marketplace by Gem Labs.</p>
+        
+        <!-- Search Section -->
+        <div class="relative mb-10 group">
+            <i data-lucide="search" class="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 group-focus-within:text-black transition-colors"></i>
+            <input type="text" id="search" placeholder="Search applications..." class="w-full bg-gray-50 border border-transparent rounded-[1.5rem] py-5 pl-14 pr-6 outline-none focus:bg-white focus:border-black/5 focus:ring-4 focus:ring-black/5 transition-all text-sm font-medium">
         </div>
 
-        <div class="relative mb-8">
-            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4"></i>
-            <input type="text" id="search" placeholder="Search apps..." class="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-black/5 transition-all">
+        <!-- Section: Featured -->
+        <div class="mb-10">
+            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400 mb-6">Featured This Week</h3>
+            <div id="featured-hero" class="w-full h-48 bg-black rounded-[2.5rem] relative overflow-hidden group cursor-pointer mb-10 shadow-2xl shadow-black/10">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+                <!-- Placeholder for high-res hero image -->
+                <div class="absolute inset-0 shimmer opacity-10"></div>
+                <div class="absolute bottom-8 left-8 z-20">
+                    <span class="bg-white/20 backdrop-blur-md text-white text-[9px] font-black uppercase px-2.5 py-1 rounded-md mb-2 inline-block tracking-widest">Mastery</span>
+                    <h4 class="text-2xl font-bold text-white tracking-tight">Splitify: Pro Edition</h4>
+                    <p class="text-white/60 text-xs">The gold standard for expense sharing.</p>
+                </div>
+            </div>
         </div>
 
-        <div id="apps" class="space-y-4">
-            <!-- Loading Skeleton -->
-            <div class="h-24 shimmer rounded-3xl"></div>
-            <div class="h-24 shimmer rounded-3xl"></div>
+        <!-- Section: Directory -->
+        <div class="mb-4 flex items-baseline justify-between">
+            <h3 class="text-xs font-black uppercase tracking-[0.2em] text-gray-400">App Directory</h3>
+            <span id="app-count" class="text-[10px] font-bold text-gray-300 italic"></span>
+        </div>
+        
+        <div id="apps" class="space-y-3">
+            <!-- Skeletons -->
+            <div class="h-24 shimmer rounded-[2rem]"></div>
+            <div class="h-24 shimmer rounded-[2rem]"></div>
         </div>
     </main>
 
-    <!-- App Detail Modal -->
-    <div id="modal-container" class="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0">
-        <div id="modal-content" class="bg-white w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] p-8 transform translate-y-full shadow-2xl">
-            <div class="flex justify-between items-start mb-8">
-                <div id="m-icon" class="w-24 h-24 bg-gray-100 rounded-3xl shadow-lg overflow-hidden flex items-center justify-center"></div>
-                <button onclick="closeModal()" class="p-2.5 bg-gray-100 rounded-full active:scale-90 transition-transform">
-                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
-                </button>
-            </div>
+    <!-- Professional App Sheet (Modal) -->
+    <div id="modal-container" class="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm hidden flex items-end justify-center p-0 opacity-0 transition-opacity duration-300">
+        <div id="modal-content" class="modal-sheet bg-white w-full max-w-xl rounded-t-[3rem] p-10 transform translate-y-full shadow-2xl relative">
             
-            <h3 id="m-title" class="text-3xl font-black mb-1 tracking-tight"></h3>
-            <p id="m-cat" class="text-gray-400 text-xs font-bold uppercase tracking-[0.2em] mb-4"></p>
-            <p id="m-desc" class="text-gray-600 leading-relaxed mb-8"></p>
-            
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                    <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Version</p>
-                    <p id="m-ver" class="font-bold text-black"></p>
+            <!-- Handle -->
+            <div class="absolute top-4 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-100 rounded-full"></div>
+
+            <!-- Top Actions -->
+            <div class="flex justify-between items-start mb-10">
+                <div id="m-icon" class="w-24 h-24 bg-black rounded-[2.5rem] shadow-xl overflow-hidden flex items-center justify-center p-0"></div>
+                <div class="flex gap-2">
+                    <button id="m-share" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform">
+                        <i data-lucide="share" class="w-5 h-5 text-black"></i>
+                    </button>
+                    <button onclick="closeModal()" class="p-3.5 bg-gray-50 rounded-full active:scale-90 transition-transform">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
+                    </button>
                 </div>
-                <button id="feedback-btn" class="bg-gray-50 p-4 rounded-2xl border border-gray-100 text-left active:scale-95 transition-transform">
-                    <p class="text-[10px] text-gray-400 uppercase font-black mb-1">Feedback</p>
-                    <p class="font-bold text-black flex items-center gap-1">Email <i data-lucide="mail" class="w-3 h-3"></i></p>
+            </div>
+            
+            <div class="mb-8">
+                <h3 id="m-title" class="text-4xl font-black mb-1 tracking-tighter"></h3>
+                <p id="m-cat" class="text-gray-400 text-xs font-black uppercase tracking-[0.25em]"></p>
+            </div>
+            
+            <p id="m-desc" class="text-gray-600 leading-relaxed text-sm mb-10 font-medium"></p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-10">
+                <div class="bg-gray-50 p-5 rounded-3xl border border-gray-100">
+                    <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">Version</p>
+                    <p id="m-ver" class="font-bold text-black text-sm"></p>
+                </div>
+                <button id="feedback-btn" class="bg-gray-50 p-5 rounded-3xl border border-gray-100 text-left active:scale-95 transition-transform group">
+                    <p class="text-[10px] text-gray-400 uppercase font-black mb-1 tracking-widest">Support</p>
+                    <p class="font-bold text-black text-sm flex items-center justify-between">Email <i data-lucide="arrow-up-right" class="w-3 h-3 text-gray-300 group-hover:text-black"></i></p>
                 </button>
             </div>
             
-            <a id="m-link" href="#" target="_blank" class="block w-full bg-black text-white text-center py-5 rounded-3xl font-bold text-lg hover:shadow-xl active:scale-[0.98] transition-all">
-                Get App
-            </a>
+            <div class="flex gap-3">
+                <a id="m-link" href="#" target="_blank" class="flex-1 bg-black text-white text-center py-5 rounded-[2rem] font-black text-sm uppercase tracking-widest hover:shadow-2xl shadow-black/20 active:scale-[0.98] transition-all">
+                    Get Application
+                </a>
+            </div>
             
-            <div class="h-6 safe-bottom"></div>
+            <div class="h-8 safe-bottom"></div>
         </div>
     </div>
 
@@ -104,10 +166,9 @@
         let data = [];
         const FEEDBACK_EMAIL = "saqibzahidofficial@gmail.com";
 
-        const renderIcon = (icon, isModal = false) => {
-            const sizeClass = isModal ? "w-full h-full" : "w-full h-full";
+        const renderIcon = (icon) => {
             if (icon.includes('.') || icon.includes('/')) {
-                return `<img src="${icon}" class="${sizeClass} object-cover" onerror="this.src='https://via.placeholder.com/128?text=?'">`;
+                return `<img src="${icon}" class="w-full h-full object-cover">`;
             }
             return `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i data-lucide="${icon}" class="w-1/2 h-1/2"></i></div>`;
         };
@@ -117,6 +178,7 @@
                 const res = await fetch('./apps.json');
                 data = await res.json();
                 render(data);
+                document.getElementById('app-count').innerText = `${data.length} apps available`;
             } catch (e) {
                 console.error("Data load failed:", e);
                 document.getElementById('apps').innerHTML = `<p class="text-center text-gray-400 py-10">Directory temporarily unavailable.</p>`;
@@ -131,24 +193,28 @@
             };
 
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-
             setupPWAInstall();
         }
 
         function render(apps) {
             const container = document.getElementById('apps');
             container.innerHTML = apps.map(app => `
-                <div onclick='openModal(${JSON.stringify(app)})' class="flex items-center justify-between p-4 bg-white border border-gray-100 rounded-[2rem] active:scale-[0.97] transition-all cursor-pointer hover:border-black/10 shadow-sm">
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl overflow-hidden shadow-sm bg-gray-50">
+                <div onclick='openModal(${JSON.stringify(app)})' class="app-card flex items-center justify-between p-5 bg-white border border-gray-100 rounded-[2.2rem] cursor-pointer shadow-sm">
+                    <div class="flex items-center gap-5">
+                        <div class="w-16 h-16 rounded-[1.3rem] overflow-hidden shadow-sm bg-gray-50 border border-gray-50">
                             ${renderIcon(app.icon)}
                         </div>
                         <div>
-                            <h4 class="font-bold text-lg tracking-tight">${app.name}</h4>
-                            <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">${app.category}</p>
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <h4 class="font-bold text-base tracking-tight">${app.name}</h4>
+                                ${app.status ? `<span class="text-[8px] font-black uppercase bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm tracking-widest">${app.status}</span>` : ''}
+                            </div>
+                            <p class="text-[11px] text-gray-400 font-bold uppercase tracking-widest">${app.category}</p>
                         </div>
                     </div>
-                    <span class="bg-gray-100 text-black px-6 py-2 rounded-full text-xs font-black tracking-widest active:bg-black active:text-white transition-colors">GET</span>
+                    <div class="bg-gray-50 text-black h-10 w-16 flex items-center justify-center rounded-full text-[10px] font-black tracking-tighter active:bg-black active:text-white transition-all">
+                        GET
+                    </div>
                 </div>
             `).join('');
             lucide.createIcons();
@@ -160,10 +226,26 @@
             document.getElementById('m-desc').innerText = app.description;
             document.getElementById('m-ver').innerText = app.version;
             document.getElementById('m-link').href = app.url;
-            document.getElementById('m-icon').innerHTML = renderIcon(app.icon, true);
+            document.getElementById('m-icon').innerHTML = renderIcon(app.icon);
             
             document.getElementById('feedback-btn').onclick = () => {
                 window.location.href = `mailto:${FEEDBACK_EMAIL}?subject=Feedback for ${app.name}`;
+            };
+
+            // Individual Sharing Logic
+            document.getElementById('m-share').onclick = async () => {
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: app.name,
+                            text: `Check out ${app.name} on Gem Store.`,
+                            url: app.url
+                        });
+                    } catch (e) { console.log("Share cancelled"); }
+                } else {
+                    navigator.clipboard.writeText(app.url);
+                    alert("App link copied to clipboard!");
+                }
             };
 
             const container = document.getElementById('modal-container');
@@ -184,22 +266,7 @@
             
             container.style.opacity = '0';
             content.classList.add('translate-y-full');
-            setTimeout(() => container.classList.add('hidden'), 400);
-        }
-
-        async function shareStore() {
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: 'Gem Store',
-                        text: 'Discover exclusive PWAs by Gem Labs.',
-                        url: window.location.href
-                    });
-                } catch (e) { console.log("Share failed"); }
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                // Simple toast could be added here
-            }
+            setTimeout(() => container.classList.add('hidden'), 500);
         }
 
         function setupPWAInstall() {
