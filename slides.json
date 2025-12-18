@@ -11,5 +11,11 @@
     "subtitle": "Beta Version", 
     "label": "New", 
     "image": "assets/productivity.jpg", 
+    "action": "student-dairy" },
+  { "id": "hero-2", 
+    "title": "Student Dairy", 
+    "subtitle": "Beta Version", 
+    "label": "New", 
+    "image": "assets/productivity.jpg", 
     "action": "student-dairy" }
 ]
